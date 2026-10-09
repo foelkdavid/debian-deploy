@@ -3,7 +3,7 @@
 # intel, amd, nvidia, nouveau, vm
 # These defaults can also be overridden for one run: GPU_DRIVER=vm ./deploy.sh
 GPU_DRIVER=${GPU_DRIVER:-intel}
-USERSHELL=/usr/bin/zsh
+USERSHELL=${USERSHELL:-/usr/bin/zsh}
 
 # VM guest integration: auto, qemu, vmware, none.
 # auto uses systemd-detect-virt; graphics support does not require a guest agent.
@@ -32,7 +32,7 @@ PACKAGES=(
 
 # Explicit backports requests; graphics/audio companions can follow their libraries.
 BACKPORTS_PACKAGES=(
-    hyprland xdg-desktop-portal-hyprland
+    hyprland hyprland-guiutils xdg-desktop-portal-hyprland
 )
 
 # Noctalia v5 is supplied by the Trixie APT repository in its installation docs.

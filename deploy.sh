@@ -174,6 +174,16 @@ for config in alacritty zsh gtk-3.0 nvim hypr; do
     link_config "$REPO_DIR/dotfiles/$config" "$CONFIG_DIR/$config"
 done
 link_config "$REPO_DIR/dotfiles/zsh/zshrc" "$HOME/.zshrc"
+
+printf 'Configuring the login shell...\n'
+[[ "$USERSHELL" == /* && -x "$USERSHELL" ]] || die "The configured login shell is not an executable absolute path: $USERSHELL"
+LOGIN_USER=$(id -un)
+if [[ "$(getent passwd "$LOGIN_USER" | cut -d: -f7)" != "$USERSHELL" ]]; then
+    sudo chsh -s "$USERSHELL" "$LOGIN_USER"
+fi
+[[ "$(getent passwd "$LOGIN_USER" | cut -d: -f7)" == "$USERSHELL" ]] || die "The login shell for $LOGIN_USER was not changed to $USERSHELL."
+printf 'Login shell: %s (takes effect at your next login).\n' "$USERSHELL"
+
 bash "$REPO_DIR/dotfiles/zsh/getplugins.sh"
 bash "$REPO_DIR/dotfiles/fonts/getfonts.sh"
 xdg-user-dirs-update
@@ -199,7 +209,6 @@ if ! cmp -s "$WORK_DIR/hyprland-portals.conf" "$PORTAL_CONFIG"; then
     fi
     install -m 644 "$WORK_DIR/hyprland-portals.conf" "$PORTAL_CONFIG"
 fi
-Hyprland --verify-config --config "$CONFIG_DIR/hypr/hyprland.lua"
 
 printf 'Enabling services for the next boot...\n'
 # Let NetworkManager import/manage the Debian installer's ifupdown interfaces.
@@ -215,8 +224,5 @@ fi
 sudo systemctl enable "${SERVICES[@]}" "${GUEST_SERVICES[@]}"
 systemctl --user --no-reload enable pipewire.socket pipewire-pulse.socket wireplumber.service
 
-if [[ "$(getent passwd "$(id -un)" | cut -d: -f7)" != "$USERSHELL" ]]; then
-    sudo chsh -s "$USERSHELL" "$(id -un)"
-fi
 printf '\nSetup complete. Reboot, log in on a TTY, then run start-hyprland.\n'
 [[ ! -d "$BACKUP_DIR" ]] || printf 'Previous dotfiles were saved in %s\n' "$BACKUP_DIR"
