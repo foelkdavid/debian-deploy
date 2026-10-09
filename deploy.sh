@@ -219,10 +219,12 @@ managed=true
 EOF
 sudo install -D -m 644 "$WORK_DIR/networkmanager.conf" /etc/NetworkManager/conf.d/10-debian-deploy.conf
 if [[ -e /usr/lib/systemd/system/networking.service || -e /lib/systemd/system/networking.service ]]; then
-    sudo systemctl disable networking.service
+    sudo systemctl --root=/ --no-reload disable networking.service
 fi
-sudo systemctl enable "${SERVICES[@]}" "${GUEST_SERVICES[@]}"
-systemctl --user --no-reload enable pipewire.socket pipewire-pulse.socket wireplumber.service
+# --root=/ writes unit enablement links directly, without contacting either
+# systemd manager. A first setup may not have a user session bus/runtime yet.
+sudo systemctl --root=/ --no-reload enable "${SERVICES[@]}" "${GUEST_SERVICES[@]}"
+systemctl --user --root=/ --no-reload enable pipewire.socket pipewire-pulse.socket wireplumber.service
 
 printf '\nSetup complete. Reboot, log in on a TTY, then run start-hyprland.\n'
 [[ ! -d "$BACKUP_DIR" ]] || printf 'Previous dotfiles were saved in %s\n' "$BACKUP_DIR"
