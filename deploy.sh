@@ -61,7 +61,7 @@ CONFIG_DIR=${XDG_CONFIG_HOME:-$HOME/.config}
 STATE_DIR=${XDG_STATE_HOME:-$HOME/.local/state}/debian-deploy
 if "$DRY_RUN"; then
     printf 'Target: Debian 13 Trixie (%s), graphics: %s\n' "$ARCH" "$GPU_DRIVER"
-    printf 'Stable packages: %s\n' "${PACKAGES[*]} ${GPU_PACKAGES[*]}"
+    printf 'Default packages (graphics/audio may use backports): %s\n' "${PACKAGES[*]} ${GPU_PACKAGES[*]}"
     printf 'Trixie backports: %s\n' "${BACKPORTS_PACKAGES[*]}"
     printf 'Noctalia repository: %s\n' "${NOCTALIA_PACKAGES[*]}"
     printf 'System services: %s\n' "${SERVICES[*]} ${GUEST_SERVICES[*]}"
@@ -115,10 +115,16 @@ sudo dpkg -i "$WORK_DIR/nickh-archive-keyring.deb"
 sudo install -m 644 "$WORK_DIR/noctalia-trixie.sources" /etc/apt/sources.list.d/noctalia-trixie.sources
 sudo apt-get update
 
-# Keep named applications on their normal APT candidates (including security
-# updates), while allowing Hyprland's dependencies to resolve from backports.
+# Keep applications on their normal candidates (including security updates).
+# Graphics, PipeWire and WirePlumber use exact-version dependencies within their
+# stacks, so let APT select matching versions with the backports libraries.
 INSTALL_PACKAGES=()
 for package in "${PACKAGES[@]}" "${GPU_PACKAGES[@]}" "${NOCTALIA_PACKAGES[@]}"; do
+    case "$package" in
+        libgl1-mesa-dri|libegl-mesa0|mesa-*|nvidia-*|libnvidia-*|pipewire-*|wireplumber|libspa-0.2-bluetooth)
+            INSTALL_PACKAGES+=("$package")
+            continue ;;
+    esac
     candidate=$(LC_ALL=C apt-cache policy "$package" | awk '$1 == "Candidate:" { print $2; exit }')
     [[ -n "$candidate" && "$candidate" != '(none)' ]] || die "No APT candidate for $package. Check the configured repositories."
     INSTALL_PACKAGES+=("$package=$candidate")

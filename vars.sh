@@ -11,8 +11,9 @@ VM_GUEST=${VM_GUEST:-auto}
 # Leave false with accelerated Virtio/virgl. Set true for a software-rendered VM.
 VM_SOFTWARE_RENDERING=${VM_SOFTWARE_RENDERING:-false}
 
-# Packages from Debian Trixie. Recommends are disabled by the installer, so
-# desktop integrations that we use are explicitly included here.
+# Packages normally selected from Debian Trixie. Graphics and audio stacks may use
+# backports to match Hyprland's libraries. Recommends are disabled by the
+# installer, so desktop integrations that we use are explicitly included here.
 PACKAGES=(
     ca-certificates curl git unzip zip python3
     dbus dbus-user-session libpam-systemd polkitd
@@ -29,7 +30,7 @@ PACKAGES=(
     libgl1-mesa-dri libegl-mesa0
 )
 
-# Install only these packages (and their necessary dependencies) from backports.
+# Explicit backports requests; graphics/audio companions can follow their libraries.
 BACKPORTS_PACKAGES=(
     hyprland xdg-desktop-portal-hyprland
 )

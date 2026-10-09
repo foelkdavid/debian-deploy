@@ -13,6 +13,8 @@ Sets up Debian 13 Trixie + Hyprland + Noctalia.
 
 Installs Alacritty, Thunar, Firefox ESR, Zsh and the usual audio/network/Bluetooth
 stuff too. Hyprland comes from Trixie backports; Noctalia has its own APT repo.
+Graphics drivers, PipeWire and WirePlumber can also use backports to keep their
+package versions consistent. Other applications keep their normal APT candidates.
 
 ## Graphics
 Set `GPU_DRIVER` in `vars.sh` to `intel`, `amd`, `nvidia`, `nouveau` or `vm`.
